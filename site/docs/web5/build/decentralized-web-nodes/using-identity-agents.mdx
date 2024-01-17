@@ -1,0 +1,82 @@
+---
+sidebar_position: 9
+---
+
+import CodeSnippet from '@site/src/components/CodeSnippet';
+
+# Using Identity Agents
+
+[Agents](https://developer.tbd.website/docs/web5/learn/agents/) manage [DIDs](https://developer.tbd.website/docs/web5/learn/decentralized-identifiers), data, and communication between [DWNs](https://developer.tbd.website/docs/web5/learn/decentralized-web-nodes). Identity Agents are a type of agent that specialize in managing multiple decentralized identities, making it easier to use existing identities across various Web5 applications.
+
+While the `Web5.connect()` function creates a local User Agent and a **new** identity, Identity Agents allow you to connect a web app to an **existing** identity.
+
+This guide provides an overview of how to enable an Identity Agent to manage multiple user identities on behalf of your application.
+
+<details>
+<summary>Prerequisites</summary>
+
+**Install the following packages**
+
+```bash
+npm i @web5/dids @web5/identity-agent @web5/api
+```
+
+**Import the following modules**
+    
+```js
+import { DidIonMethod } from '@web5/dids';
+import { IdentityAgent } from '@web5/identity-agent';
+import { Web5, getTechPreviewDwnEndpoints } from '@web5/api';
+```
+    
+</details>
+
+## Initialize the Agent
+Start by creating an instance of the `IdentityAgent`.
+
+<CodeSnippet functionName="createIdentityAgent" />
+
+## Prompt Users to Authenticate
+
+The first time an end user launches an application that uses an Identity Agent, they'll need to authenticate with a one-time passphrase for security purposes. 
+<CodeSnippet functionName="authenticateIdentityAgent" />
+
+## Connect User DIDs to DWNs
+Next, enable the Identity Agent to manage user DIDs within your application by connecting each DID to a DWN. Below is an example using TBD-hosted DWN endpoints:
+
+<CodeSnippet functionName="getDwnEndpoints" />
+
+
+<details>
+<summary>Expected Output of didOptions</summary>
+
+```js
+{
+  keySet: { verificationMethodKeys: [ [Object], [Object] ] },
+  services: [
+    {
+      id: '#dwn',
+      serviceEndpoint: [Object],
+      type: 'DecentralizedWebNode'
+    }
+  ]
+}
+```
+    
+</details>
+
+## Create Identities
+Now that `didOptions` contains cryptographic key pairs and service endpoints, you can create as many identities as necessary. Each identity, linked to a unique DID, represents and compartmentalizes different aspects of a user. For example, you can have a identity for social media interactions and another for professional engagements.
+
+<CodeSnippet functionName="createSocialMediaAndCareerIdentity" />
+
+:::note
+* The `name` field serves as a friendly name for reference. 
+* The `kms` field stands for Key Management Service and can securely store and manage the cryptographic keys associated with a DID. If you don't specify a particular key management service, such as AWS Key Management Service or Google Cloud Key Management, Web5 will default to an in-memory key manager.
+:::
+
+## Connect to Web5
+Finally, connect the Identity Agent, your application, and the managed identities to Web5.
+
+<CodeSnippet functionName="connectIdentityToWeb5" />
+
