@@ -1,4 +1,5 @@
 import { test, beforeAll, expect, describe } from 'vitest';
+import { setupWeb5 } from '../../../main-setup';
 
 import {
   queryProtocolsWithFilterDescending,
@@ -16,8 +17,10 @@ let did;
 describe('query-from-dwn', () => {
   // connect to web5 beforeAll tests and assign it to web5 variable
   beforeAll(async () => {
-    web5 = globalThis.web5;
-    did = globalThis.did;
+    const result = await setupWeb5();
+    console.log('result', result);
+    web5 = result.web5;
+    did = result.did;
   });
 
   test('queryProtocolsForMusic returns an array of protocols', async () => {
