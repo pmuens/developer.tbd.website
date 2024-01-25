@@ -3,6 +3,8 @@ title: Create a DID
 sidebar_position: 1
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 import CodeSnippet from '@site/src/components/CodeSnippet';
 
 [Decentralized Identifiers (DIDs)](/docs/web5/learn/decentralized-identifiers) are how you are identified on the decentralized web. 
@@ -29,20 +31,75 @@ The `Web5.connect()` function above is the preferred way to create a DID, but th
 
 **Import the DID Method you'd like to use:**
 
-```js
-//did:dht
-import { DidDhtMethod } from '@web5/dids'
+<Tabs>
+  <TabItem value="JavaScript" label="JavaScript" default>
 
-//did:key
-import { DidKeyMethod } from '@web5/dids'
+  ```js
+  //did:dht
+  import { DidDhtMethod } from '@web5/dids'
 
-//did:ion
-import { DidIonMethod } from '@web5/dids'
-```
+  //did:key
+  import { DidKeyMethod } from '@web5/dids'
+
+  //did:ion
+  import { DidIonMethod } from '@web5/dids'
+  ```
+
+  </TabItem>
+  <TabItem value="Kotlin" label="Kotlin">
+
+  ```kotlin
+  // all DID methods require an instance of a key manager
+  import web5.sdk.crypto.InMemoryKeyManager
+
+  //did:dht
+  import web5.sdk.dids.methods.dht.DidDht
+
+  //did:key
+  import web5.sdk.dids.methods.key.DidKey
+
+  //did:ion
+  import web5.sdk.dids.methods.ion.DidIon
+
+  ```
+ 
+  </TabItem>
+</Tabs>
 
 ### did:dht
 
-<CodeSnippet functionName="createDidDht" />
+<Tabs>
+  <TabItem value="JavaScript" label="JavaScript" default>
+  
+    <CodeSnippet functionName="createDidDht" />
+
+  </TabItem>
+  <TabItem value="Kotlin" label="Kotlin">
+
+  ```kotlin
+
+  //Import to create a did:dht with options 
+  import web5.sdk.dids.methods.dht.CreateDidDhtOptions
+  
+  //Creates a DID using the DHT method and publishes the DID Document to the DHT
+  val didDht = DidDht.create(InMemoryKeyManager(), CreateDidDhtOptions(publish = true))
+
+  //Import DID Resolver
+  import web5.sdk.dids.DidResolvers
+
+  //Resolves DID
+  val resolvedDid = DidResolvers.resolve(didDht.uri)
+
+  //DID string
+  val did = resolvedDid.didDocument.id.toString()
+
+  //DID Document
+  val didDocument = resolvedDid.didDocument
+
+  ```
+
+  </TabItem>
+</Tabs>
 
 ### did:key
 
