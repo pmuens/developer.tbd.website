@@ -1,6 +1,9 @@
 ---
-sidebar_position: 5
+sidebar_position: 4
 ---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 
 # Structuring a PFI App
 
@@ -20,42 +23,108 @@ Your main server entrypoint should fulfill the following responsibilities:
 * Accept `GET` requests for Offerings and Exchanges data
 * Handle submission requests for new `RFQ`, `Order`, and `Close` messages
 
-To begin, you’ll want to configure your server with the required exchange and offerings API providers:
-```js
-import { TbdexHttpServer } from '@tbdex/http-server'
+To begin, you’ll want to configure your server with the required exchange and offerings API providers. We can assume that `ExchangeApiProvider` and `OfferingsApiProvider` are classes that implement the `ExchangeApi` and `OfferingsApi` that you've created:
 
-const httpApi = new TbdexHttpServer({ exchangesApi: ExchangeApiProvider, offeringsApi: OfferingApiProvider })
-```
+<Tabs groupId="langauge">
+<TabItem label="JavaScript" value="JavaScript">
+</TabItem>
+<TabItem label="Kotlin" value="Kotlin">
+</TabItem>
+</Tabs>
+
+<Tabs groupId="langauge">
+  <TabItem label="JavaScript" value="JavaScript">
+
+  ```js
+  import { TbdexHttpServer } from '@tbdex/http-server'
+
+  const httpApi = new TbdexHttpServer({ 
+    exchangesApi: ExchangeApiProvider, 
+    offeringsApi: OfferingApiProvider 
+    })
+  ```
+
+  </TabItem>
+  <TabItem label="Kotlin" value="Kotlin">
+
+  ```kotlin
+  import tbdex.sdk.httpserver.*
+
+  val tbdexServerConfig = TbdexHttpServerConfig(
+    port = 8080, 
+    exchangesApi = ExchangeApiProvider, 
+    offeringsApi = OfferingsApiProvider)
+  const httpApi = new TbdexHttpServer(tbdexServerConfig);
+  ```
+
+  </TabItem>
+</Tabs>
 
 
 The [message types](/docs/tbdex/message-types) that are sent from Wallets to PFIs are: `RFQ`, `Order`, and `Close`. 
-As a result, you’ll want to ensure that your PFI is programmed to accept those messages and create appropriate messages in response:
+As a result, you’ll want to ensure that your PFI is programmed to accept those messages and create appropriate messages in response.
 
+<Tabs groupId="langauge">
+  <TabItem label="JavaScript" value="JavaScript">
 
-```js
-httpApi.submit('rfq', async (ctx, rfq) => {
-  await ExchangeApiProvider.write({ message: rfq as Rfq })
-})
+  ```js
+  httpApi.submit('rfq', async (ctx, rfq) => {
+    await ExchangeApiProvider.write({ message: rfq as Rfq })
+  })
 
-httpApi.submit('order', async (ctx, order) => {
-  await ExchangeApiProvider.write({ message: order as Order })
-})
+  httpApi.submit('order', async (ctx, order) => {
+    await ExchangeApiProvider.write({ message: order as Order })
+  })
 
-httpApi.submit('close', async (ctx, close) => {
-  await ExchangeApiProvider.write({ message: close as Close })
-})
-```
+  httpApi.submit('close', async (ctx, close) => {
+    await ExchangeApiProvider.write({ message: close as Close })
+  })
 
+  const server = httpApi.listen(config.port, () => {
+    log.info(`Mock PFI listening on port ${config.port}`)
+  })
+  ```
 
-With your routes configured, set your server to begin listening:
+  </TabItem>
+  <TabItem label="Kotlin" value="Kotlin">
 
+  Your callbacks for each message type should be declared and passed into the <code>TbdexHttpServerConfig</code> parameter ahead of initalization. This can be done as follows:
+  ```kotlin
+  fun main() {
+    // Define your submitCallbacks object to ensure each message is handled
+    val submitCallbacks: MutableMap<String, SubmitCallback> = mutableMapOf(
+      "rfq" to ::rfqCallback,
+      "order" to ::orderCallback,
+      "close" to ::closeCallback
+    )
 
-```js
-const server = httpApi.listen(config.port, () => {
-  log.info(`Mock PFI listening on port ${config.port}`)
-})
-```
+    // Set up your server as shown before, just with the new parameter added
+    val tbdexServerConfig = TbdexHttpServerConfig(
+      port = 8080, 
+      submitCallbacks = submitCallbacks,
+      exchangesApi = ExchangeApiProvider, 
+      offeringsApi = OfferingsApiProvider)
+    const httpApi = new TbdexHttpServer(tbdexServerConfig);
 
+    // Call configure() to register your routes and map the callbacks
+    httpApi.configure(this)
+  }
+
+  fun rfqCallback(call: ApplicationCall, messageKind: MessageKind, offering: Offering?) {
+    // RFQ Callback Implementation
+  }
+
+  fun orderCallback(call: ApplicationCall, messageKind: MessageKind, offering: Offering?) {
+    // Order Callback Implementation
+  }
+
+  fun closeCallback(call: ApplicationCall, messageKind: MessageKind, offering: Offering?) {
+    // Close Callback Implementation
+  }
+  ```
+
+  </TabItem>
+</Tabs>
 
 Now your server is configured with the appropriate routing setup.
 
